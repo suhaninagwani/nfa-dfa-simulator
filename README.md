@@ -170,9 +170,6 @@ Every feature was built on its own branch and merged through a reviewed pull req
 |---|---|---|
 | Suhani Nagwani | `render.js`; UI framework `app/state.js`, `input.js`, `main.js`; step player `steps.js`, `dfa-view.js`, `result.js`; **string simulation core** `automata/simulate.js`; string tester `trace.js`; CI/CD + GitHub Pages | `simulate.test.js`, README |
 | Sriraga | **Core algorithms** `automata/closure.js`, `parser.js`, `examples.js`, `subset.js`, `validate.js`; validation panel `app/validation.js` | `parser.test.js`, `subset.test.js`, `equivalence.test.js`, test plan, screenshots, report |
-| _Member 3_ | _fill in_ | |
-| _Member 4_ | _fill in_ | |
-| _Member 5_ | _fill in_ | |
 
 Reference: A. V. Aho, M. S. Lam, R. Sethi, J. D. Ullman, *Compilers: Principles, Techniques, and Tools*, 2nd ed., §3.7 (subset construction, Fig. 3.34–3.36); J. E. Hopcroft, R. Motwani, J. D. Ullman, *Introduction to Automata Theory, Languages, and Computation*, 3rd ed., §2.3–2.5. The textbook example was cross-checked against the hand-worked trace in the report (optionally also verify in JFLAP).
 
