@@ -1,0 +1,11 @@
+{
+  "name": "nfa-dfa-simulator",
+  "version": "1.0.0",
+  "description": "ε-NFA → DFA conversion simulator (subset construction) with step-by-step visualisation — CSET302 Automata Theory project",
+  "scripts": {
+    "test": "node --test TestCases/*.test.js",
+    "start": "npx --yes http-server SourceCode -p 8080 -o"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}
