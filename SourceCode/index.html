@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ε-NFA to DFA, step by step</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 32" aria-hidden="true">
+        <circle cx="12" cy="16" r="9" />
+        <circle cx="50" cy="16" r="9" /><circle cx="50" cy="16" r="5.5" />
+        <path d="M22 16 H38" /><path d="M35 12 L40 16 L35 20" />
+      </svg>
+      <div>
+        <h1>ε-NFA to DFA</h1>
+        <p>Subset construction, one step at a time</p>
+      </div>
+    </div>
+    <p class="course">CSET302 Automata Theory project</p>
+  </header>
+
+  <main class="workspace">
+    <!-- ======================= definition ======================= -->
+    <aside class="editor" aria-label="Automaton definition">
+      <h2>Your automaton</h2>
+      <label for="example">Start from an example</label>
+      <select id="example"></select>
+
+      <label for="definition">Definition</label>
+      <div class="notebook">
+        <textarea id="definition" spellcheck="false" rows="17"></textarea>
+      </div>
+      <div class="actions">
+        <button id="convertBtn" class="primary">Convert to DFA</button>
+        <button id="clearBtn" class="quiet">Clear</button>
+      </div>
+      <div id="messages" aria-live="polite"></div>
+
+      <details class="format">
+        <summary>How to write a definition</summary>
+        <pre>states:   q0 q1 q2
+alphabet: a b
+start:    q0
+final:    q2
+q0 a q0,q1     // from, symbol, to
+q1 ε q2        // ε, eps or # is epsilon</pre>
+        <p>One transition per line. Several targets are separated by commas. Lines starting with <code>//</code> are ignored.</p>
+      </details>
+    </aside>
+
+    <div class="stage">
+      <!-- ======================= two diagrams ======================= -->
+      <section class="sheets" aria-label="Diagrams">
+        <figure class="sheet">
+          <figcaption>
+            <h2>NFA</h2>
+            <span class="tag">input</span>
+            <div class="view-toggle" role="group" aria-label="NFA view">
+              <button type="button" data-view="diagram" aria-pressed="true">Diagram</button>
+              <button type="button" data-view="table" aria-pressed="false">Table</button>
+            </div>
+          </figcaption>
+          <div class="paper"><svg id="nfaSvg" class="graph" role="img" aria-label="NFA state diagram"></svg></div>
+          <div id="nfaTable" class="sheet-table table-wrap" hidden></div>
+          <div id="nfaInfo" class="about"></div>
+        </figure>
+
+        <figure class="sheet">
+          <figcaption>
+            <h2>DFA</h2>
+            <span class="tag" id="dfaTag">result</span>
+            <div class="view-toggle" role="group" aria-label="DFA view">
+              <button type="button" data-view="diagram" aria-pressed="true">Diagram</button>
+              <button type="button" data-view="table" aria-pressed="false">Table</button>
+            </div>
+          </figcaption>
+          <div class="paper"><svg id="dfaSvg" class="graph" role="img" aria-label="DFA state diagram"></svg></div>
+          <div id="dfaTable" class="sheet-table table-wrap" hidden></div>
+          <div id="dfaInfo" class="about"></div>
+        </figure>
+      </section>
+
+      <!-- ======================= construction ======================= -->
+      <section class="block" id="construction">
+        <div class="block-head">
+          <h2>How the DFA is built</h2>
+          <p>Each DFA state is a set of NFA states. Click a step in the list, or use the player at the bottom to play it like a video.</p>
+        </div>
+        <div id="stepText" class="now">Convert an automaton to begin.</div>
+        <div class="two">
+          <div>
+            <h3>Transition table so far</h3>
+            <div id="stepTable" class="table-wrap"></div>
+            <div id="dfaSummary" class="facts"></div>
+            <div class="row">
+              <button id="exportBtn" class="quiet">Download DFA as text</button>
+              <label class="check"><input type="checkbox" id="showSets" checked> Show the subset under each DFA state</label>
+            </div>
+          </div>
+          <div>
+            <h3>All steps</h3>
+            <p class="hint">Click any step to jump to it.</p>
+            <ol id="stepLog" class="log steps"></ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= testing ======================= -->
+      <section class="block" id="testing">
+        <div class="block-head">
+          <h2>Try a string</h2>
+          <p>Runs the string on both machines. The NFA keeps a set of states; the DFA is always in exactly one.</p>
+        </div>
+        <div class="row">
+          <input id="testInput" type="text" placeholder="Type a string, e.g. abb. Leave empty for ε" autocomplete="off">
+          <button id="runBtn" class="primary">Run</button>
+          <button id="traceBtn" class="quiet">Run slowly</button>
+        </div>
+        <div id="runResult"></div>
+        <div class="two">
+          <div><h3>NFA, set of current states</h3><div id="nfaTrace" class="table-wrap"></div></div>
+          <div><h3>DFA, current state</h3><div id="dfaTrace" class="table-wrap"></div></div>
+        </div>
+      </section>
+
+      <!-- ======================= validation ======================= -->
+      <section class="block" id="checking">
+        <div class="block-head">
+          <h2>Check the conversion</h2>
+          <p>Two ways to make sure the DFA accepts exactly the same language as the NFA.</p>
+        </div>
+        <div class="two">
+          <div>
+            <h3>Every string up to a length</h3>
+            <p class="hint">Runs all strings of length 0 to <i>n</i> on both machines and lists any disagreement.</p>
+            <div class="row">
+              <label class="inline">Length <input id="eqLen" type="number" min="0" max="12" value="8"></label>
+              <button id="eqBtn" class="primary">Compare</button>
+            </div>
+            <div id="eqResult"></div>
+          </div>
+          <div>
+            <h3>Test cases</h3>
+            <p class="hint">One per line: a string, then <code>accept</code> or <code>reject</code>. Use <code>ε</code> for the empty string.</p>
+            <textarea id="batchInput" rows="6" spellcheck="false"></textarea>
+            <button id="batchBtn" class="primary">Run test cases</button>
+            <div id="batchResult" class="table-wrap"></div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="credits">
+        Made by Suhani and Sriraga for CSET302 Automata Theory and Computability, Bennett University.
+        Algorithm from Aho, Lam, Sethi and Ullman, <i>Compilers</i>, §3.7.
+      </footer>
+    </div>
+  </main>
+
+  <!-- ======================= player bar ======================= -->
+  <nav class="player" aria-label="Step player">
+    <div class="controls">
+      <button id="firstBtn" class="icon" aria-label="Rewind to the first step" title="Rewind (Home)">
+        <svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5 9 12l10 7z"/></svg>
+      </button>
+      <button id="prevBtn" class="icon" aria-label="Previous step" title="Back one step (←)">
+        <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>
+      </button>
+      <button id="playBtn" class="icon play" aria-label="Play" title="Play / pause (Space)">
+        <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24"><path d="M8 5v14"/><path d="M16 5v14"/></svg>
+      </button>
+      <button id="nextBtn" class="icon" aria-label="Next step" title="Forward one step (→)">
+        <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+      </button>
+      <button id="lastBtn" class="icon" aria-label="Skip to the last step" title="Skip to end (End)">
+        <svg viewBox="0 0 24 24"><path d="M18 5v14"/><path d="M5 5l10 7-10 7z"/></svg>
+      </button>
+    </div>
+    <div class="track">
+      <div class="track-top">
+        <span id="stepCounter" class="counter">No steps yet</span>
+        <span id="stepMini" class="mini"></span>
+      </div>
+      <input id="stepRange" type="range" min="0" max="0" value="0" aria-label="Scrub through the steps">
+    </div>
+    <label class="speed">Speed
+      <select id="speedSel" aria-label="Playback speed">
+        <option value="1600">0.5×</option>
+        <option value="900" selected>1×</option>
+        <option value="450">2×</option>
+      </select>
+    </label>
+  </nav>
+
+</body>
+</html>
